@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rekod Kehadiran Kelas Pemulihan ✨</title>
+
+<style>
+  :root{
+    --bg:#fff9fb;
+    --card:#ffffff;
+    --text:#334155;
+    --muted:#64748b;
+    --primary:#8b5cf6;
+    --primary-2:#ec4899;
+    --primary-soft:#f3e8ff;
+    --border:#f1d5e8;
+    --green:#16a34a;
+    --green-bg:#dcfce7;
+    --amber:#d97706;
+    --amber-bg:#fef3c7;
+    --red:#dc2626;
+    --red-bg:#fee2e2;
+    --purple:#7c3aed;
+    --purple-bg:#ede9fe;
+    --gray:#475569;
+    --gray-bg:#e2e8f0;
+    --blue:#2563eb;
+    --blue-bg:#dbeafe;
+    --shadow:0 14px 40px rgba(236,72,153,.10);
+    --radius:22px;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at 8% 12%, rgba(253,224,71,.20), transparent 12%),
+      radial-gradient(circle at 92% 10%, rgba(192,132,252,.16), transparent 12%),
+      radial-gradient(circle at 15% 88%, rgba(96,165,250,.13), transparent 12%),
+      linear-gradient(180deg,#fff0f7 0,#fdf7ff 260px,#fff9fb 100%);
+  }
+
+  .app{max-width:1200px;margin:auto;padding:28px 18px 60px}
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .title-wrap{display:flex;gap:14px;align-items:center}
+  .logo{
+    width:60px;height:60px;border-radius:18px;
+    background:linear-gradient(135deg,var(--primary),var(--primary-2));
+    display:grid;place-items:center;color:white;font-size:29px;
+    box-shadow:var(--shadow)
+  }
+  h1{font-size:clamp(24px,4vw,36px);margin:0;line-height:1.05}
+  .subtitle{color:var(--muted);margin-top:5px;font-size:14px}
+  .top-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+  .hero{
+    margin-bottom:16px;
+    background:linear-gradient(135deg,#fff7ed 0,#fdf2f8 45%,#f3e8ff 100%);
+    border:1px solid #f9d3ea;
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    padding:18px 20px;
+    display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  .hero h2{margin:0 0 6px;font-size:24px;color:#7c3aed}
+  .hero p{margin:0;color:var(--muted);font-size:14px}
+  .hero-badges{display:flex;gap:10px;flex-wrap:wrap}
+  .hero-badge{
+    background:white;border:1px solid #f5c8e6;color:#7c3aed;
+    padding:8px 12px;border-radius:999px;font-weight:800;font-size:13px;
+  }
+
+  .toolbar{
+    display:flex;flex-wrap:wrap;gap:10px;
+    background:rgba(255,255,255,.92);backdrop-filter:blur(10px);
+    border:1px solid var(--border);padding:14px;border-radius:18px;
+    box-shadow:var(--shadow);margin-bottom:18px
+  }
+
+  button,input,select{font:inherit}
+  button{
+    border:0;border-radius:14px;padding:10px 14px;cursor:pointer;font-weight:800;
+    transition:.15s ease;
+  }
+  button:hover{transform:translateY(-1px)}
+  .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white}
+  .btn-soft{background:#fdf2f8;color:#be185d}
+  .btn-danger{background:#fff1f2;color:#be123c}
+  .btn-neutral{background:#f8fafc;color:#334155;border:1px solid #e2e8f0}
+  input[type="date"], input[type="text"], input[type="password"]{
+    border:1px solid var(--border);border-radius:14px;padding:10px 12px;
+    background:white;color:var(--text);outline:none;
+  }
+  input:focus{border-color:#d8b4fe;box-shadow:0 0 0 3px #f3e8ff}
+
+  .stats{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px
+  }
+  .stat{
+    background:linear-gradient(180deg,#fff,#fffafe);
+    border:1px solid var(--border);border-radius:18px;
+    padding:14px 16px;box-shadow:var(--shadow)
+  }
+  .stat .label{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+  .stat .num{font-size:30px;font-weight:900;margin-top:4px}
+  .stat.present .num{color:var(--green)}
+  .stat.late .num{color:var(--amber)}
+  .stat.absent .num{color:var(--red)}
+  .stat.mc .num{color:var(--purple)}
+
+  .panel{
+    background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow);overflow:hidden
+  }
+  .panel-head{
+    padding:18px;display:flex;align-items:center;justify-content:space-between;
+    gap:12px;border-bottom:1px solid #fce7f3;
+    background:linear-gradient(180deg,#fff,#fff8fc)
+  }
+  .panel-title{font-weight:900;font-size:18px;color:#7c3aed}
+  .panel-note{font-size:13px;color:var(--muted)}
+
+  .student-list{padding:12px}
+  .student-row{
+    display:grid;grid-template-columns:minmax(180px,1fr) auto auto;
+    gap:12px;align-items:center;padding:14px;border-radius:18px;
+    border:1px solid #fce7f3;
+    background:linear-gradient(135deg,#ffffff 0,#fffafc 100%);
+    margin-bottom:10px;
+  }
+  .student-info{display:flex;align-items:center;gap:12px;min-width:0}
+  .photo-wrap{position:relative;width:50px;height:50px;flex:0 0 auto}
+  .student-photo,.avatar{
+    width:50px;height:50px;border-radius:50%;object-fit:cover;
+    border:3px solid #f9c5e5;background:#ede9fe;
+    box-shadow:0 6px 16px rgba(139,92,246,.14)
+  }
+  .avatar{
+    color:#7c3aed;display:grid;place-items:center;font-weight:900;
+  }
+  .photo-btn{
+    position:absolute;right:-4px;bottom:-3px;width:23px;height:23px;border-radius:50%;
+    padding:0;background:linear-gradient(135deg,#60a5fa,#8b5cf6);color:white;font-size:11px;border:2px solid white;
+    display:grid;place-items:center;
+  }
+  .student-name{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .status-group{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .status{
+    padding:8px 10px;font-size:12px;background:#f8fafc;color:#475569;border:1px solid transparent
+  }
+  .status.active.present{background:var(--green-bg);color:#166534;border-color:#86efac}
+  .status.active.late{background:var(--amber-bg);color:#92400e;border-color:#fcd34d}
+  .status.active.absent{background:var(--red-bg);color:#991b1b;border-color:#fca5a5}
+  .status.active.mc{background:var(--purple-bg);color:#5b21b6;border-color:#c4b5fd}
+  .status.active.leave{background:var(--blue-bg);color:#1d4ed8;border-color:#93c5fd}
+
+  .qr-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .qr-mini{
+    padding:8px 10px;font-size:12px;background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe
+  }
+
+  .delete{background:transparent;color:#94a3b8;padding:8px}
+  .delete:hover{color:#ef4444;background:#fff1f2}
+
+  .empty{
+    text-align:center;padding:46px 18px;color:var(--muted)
+  }
+  .empty .big{font-size:44px;margin-bottom:8px}
+
+  .bottom-actions{
+    display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    padding:16px 18px;border-top:1px solid #fce7f3;background:#fffafd
+  }
+
+  .history{margin-top:20px}
+  .history table{width:100%;border-collapse:collapse}
+  th,td{padding:12px 10px;border-bottom:1px solid #fde7f2;text-align:left;font-size:14px}
+  th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+  .tag{display:inline-flex;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:800}
+  .tag.present{background:var(--green-bg);color:#166534}
+  .tag.late{background:var(--amber-bg);color:#92400e}
+  .tag.absent{background:var(--red-bg);color:#991b1b}
+  .tag.mc{background:var(--purple-bg);color:#5b21b6}
+  .tag.leave{background:var(--blue-bg);color:#1d4ed8}
+
+  dialog{
+    border:0;border-radius:20px;padding:0;width:min(420px,92vw);box-shadow:0 30px 80px rgba(15,23,42,.24)
+  }
+  dialog.scan-modal{width:min(620px,94vw)}
+  dialog::backdrop{background:rgba(15,23,42,.44)}
+  .modal{padding:22px}
+  .modal h3{margin:0 0 8px;font-size:20px;color:#7c3aed}
+  .modal p{margin:0 0 16px;color:var(--muted);font-size:14px}
+  .modal input{width:100%;margin-bottom:14px}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px}
+
+  .lock-screen{
+    position:fixed;inset:0;background:linear-gradient(180deg,#fdf2f8,#f3e8ff 55%,#fff9fb);
+    z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .lock-card{
+    width:min(420px,94vw);background:white;border:1px solid var(--border);
+    border-radius:24px;box-shadow:0 30px 80px rgba(236,72,153,.18);
+    padding:28px;text-align:center;
+  }
+  .lock-icon{
+    width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--primary),var(--primary-2));color:white;
+    display:grid;place-items:center;font-size:34px;margin:0 auto 16px;
+  }
+  .lock-card h2{margin:0 0 8px;font-size:24px;color:#7c3aed}
+  .lock-card p{margin:0 0 18px;color:var(--muted);font-size:14px}
+  .pin-input{
+    width:100%;text-align:center;letter-spacing:.35em;font-size:22px;font-weight:800;
+    margin-bottom:12px;
+  }
+  .lock-error{min-height:20px;color:#dc2626;font-size:13px;margin-top:8px}
+  .security-note{font-size:12px;color:#64748b;margin-top:12px;line-height:1.45}
+  .hidden{display:none!important}
+
+  #qrReader{
+    width:100%;min-height:260px;border:1px dashed #e9bdd8;
+    border-radius:14px;overflow:hidden;background:#fff8fc;margin:12px 0
+  }
+  .scan-status{
+    padding:10px 12px;border-radius:12px;background:#f3e8ff;color:#7c3aed;
+    font-size:13px;margin:10px 0;min-height:40px
+  }
+  .scan-tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .manual-scan{display:flex;gap:8px;margin-top:10px}
+  .manual-scan input{flex:1;min-width:0}
+  .qr-card-preview{
+    text-align:center;border:1px solid #f5d2e8;border-radius:16px;padding:18px;
+    margin:14px 0;background:linear-gradient(180deg,#fff,#fffafd)
+  }
+  .qr-card-preview h4{margin:10px 0 4px;font-size:18px}
+  .qr-card-preview p{margin:0;color:var(--muted);font-size:12px}
+  #qrCodeBox{display:flex;justify-content:center;align-items:center;min-height:220px}
+  .scan-log{
+    margin-top:14px;border-top:1px solid #fce7f3;padding-top:12px
+  }
+  .scan-log-item{
+    display:flex;justify-content:space-between;gap:12px;padding:8px 0;
+    border-bottom:1px solid #fdf2f8;font-size:13px
+  }
+
+  .toast{
+    position:fixed;right:18px;bottom:18px;background:#7c3aed;color:white;
+    padding:12px 16px;border-radius:14px;box-shadow:var(--shadow);
+    opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+
+  @media(max-width:800px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stats .stat:first-child{grid-column:1/-1}
+    .student-row{grid-template-columns:1fr}
+    .status-group,.qr-actions{justify-content:flex-start}
+    .delete{position:absolute;right:24px}
+    .student-row{position:relative;padding-right:48px}
+    header{align-items:flex-start}
+  }
+
+  @media print{
+    body{background:white}
+    .hero,.toolbar,.bottom-actions,.delete,.history,.top-actions{display:none!important}
+    .app{max-width:none;padding:0}
+    .panel,.stat{box-shadow:none}
+  }
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title-wrap">
+      <div class="logo">✓</div>
+      <div>
+        <h1>Rekod Kehadiran Kelas Pemulihan</h1>
+        <div class="subtitle">Seronok • Ceria • Backup penuh boleh dipindahkan antara device 🌈</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn-soft" onclick="openPinDialog()">🔑 Tukar PIN</button>
+      <button class="btn-neutral" onclick="lockApp()">🔒 Lock Guru</button>
+    </div>
+  </header>
+  <section class="hero">
+    <div>
+      <h2>🌟 Jom Hadir ke Sekolah! 🌟</h2>
+      <p>Kehadiran yang baik membantu murid belajar dengan lebih yakin, gembira dan berjaya.</p>
+    </div>
+    <div class="hero-badges">
+      <div class="hero-badge">🎒 Datang Sekolah</div>
+      <div class="hero-badge">📷 Scan QR</div>
+      <div class="hero-badge">⭐ Jadi Hebat</div>
+    </div>
+  </section>
+
+
+  <div class="toolbar">
+    <input id="datePicker" type="date" aria-label="Tarikh">
+    <button class="btn-primary" onclick="openAdd()">＋ Tambah Murid</button>
+    <button class="btn-soft" onclick="markAllPresent()">✓ Semua Hadir</button>
+    <button class="btn-primary" onclick="openScanner()">▣ Scan QR</button>
+    <button class="btn-soft" onclick="printAllQR()">▦ Cetak Semua QR</button>
+    <button class="btn-neutral" onclick="exportCSV()">⬇ Eksport CSV</button>
+    <button class="btn-neutral" onclick="document.getElementById('csvImportInput').click()">⬆ Import CSV</button>
+    <input id="csvImportInput" type="file" accept=".csv,text/csv" hidden>
+    <button class="btn-soft" onclick="exportFullBackup()">💾 Full Backup</button>
+    <button class="btn-soft" onclick="document.getElementById('backupImportInput').click()">♻ Restore Backup</button>
+    <input id="backupImportInput" type="file" accept=".json,application/json" hidden>
+    <button class="btn-neutral" onclick="window.print()">🖨 Cetak</button>
+  </div>
+
+  <section class="stats">
+    <div class="stat">
+      <div class="label">Jumlah Murid</div>
+      <div class="num" id="totalCount">0</div>
+    </div>
+    <div class="stat present">
+      <div class="label">Hadir</div>
+      <div class="num" id="presentCount">0</div>
+    </div>
+    <div class="stat late">
+      <div class="label">Lewat</div>
+      <div class="num" id="lateCount">0</div>
+    </div>
+    <div class="stat absent">
+      <div class="label">Tidak Hadir</div>
+      <div class="num" id="absentCount">0</div>
+    </div>
+    <div class="stat mc">
+      <div class="label">MC / Cuti</div>
+      <div class="num" id="otherCount">0</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Kehadiran Hari Ini 😊</div>
+        <div class="panel-note" id="dateLabel"></div>
+        <div class="panel-note" id="lastScanLabel"></div>
+      </div>
+    </div>
+
+    <div id="studentList" class="student-list"></div>
+
+    <div class="bottom-actions">
+      <div class="panel-note">Tekan status untuk setiap murid. Perubahan disimpan secara automatik.</div>
+      <button class="btn-danger" onclick="clearDay()">Kosongkan Rekod Tarikh Ini</button>
+    </div>
+  </section>
+
+  <section class="panel history">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Rekod Terkini 📚</div>
+        <div class="panel-note">Ringkasan kehadiran mengikut tarikh.</div>
+      </div>
+    </div>
+    <div style="overflow:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Tarikh</th>
+            <th>Hadir</th>
+            <th>Lewat</th>
+            <th>Tidak Hadir</th>
+            <th>MC / Cuti</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<dialog id="addDialog">
+  <div class="modal">
+    <h3>Tambah Murid</h3>
+    <p>Masukkan nama murid. Anda boleh tambah satu demi satu.</p>
+    <input id="studentName" type="text" placeholder="Contoh: Ali Bin Ahmad" autocomplete="off">
+    <div class="modal-actions">
+      <button class="btn-neutral" onclick="closeAdd()">Batal</button>
+      <button class="btn-primary" onclick="addStudent()">Tambah</button>
+    </div>
+  </div>
+</dialog>
+
+
+<input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+
+<dialog id="qrDialog">
+  <div class="modal">
+    <h3>Kad QR Murid</h3>
+    <p>QR ini unik untuk seorang murid. Kod QR menyimpan ID dalaman sahaja, bukan nama murid.</p>
+    <div class="qr-card-preview">
+      <div id="qrCodeBox"></div>
+      <h4 id="qrStudentName">Nama Murid</h4>
+      <p>Kelas Pemulihan</p>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-neutral" onclick="document.getElementById('qrDialog').close()">Tutup</button>
+      <button class="btn-primary" onclick="printCurrentQR()">🖨 Cetak Kad QR</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="scannerDialog" class="scan-modal">
+  <div class="modal">
+    <h3>Scan QR Kehadiran</h3>
+    <p>Scan kad QR murid. Murid akan terus ditanda <b>Hadir</b> pada tarikh yang dipilih.</p>
+    <div id="scanStatus" class="scan-status">Tekan “Mula Kamera” atau guna gambar QR.</div>
+    <div id="qrReader"></div>
+
+    <div class="scan-tools">
+      <button class="btn-primary" id="startCameraBtn" onclick="startQrCamera()">📷 Mula Kamera</button>
+      <button class="btn-neutral" id="stopCameraBtn" onclick="stopQrCamera()">■ Henti Kamera</button>
+      <button class="btn-soft" onclick="document.getElementById('qrFileInput').click()">🖼 Scan dari Gambar</button>
+      <input id="qrFileInput" type="file" accept="image/*" capture="environment" hidden>
+    </div>
+
+    <div class="manual-scan">
+      <input id="manualQrInput" type="text" placeholder="USB scanner / tampal kod QR">
+      <button class="btn-soft" onclick="processManualQr()">Rekod</button>
+    </div>
+
+    <div class="scan-log">
+      <b>Scan terkini</b>
+      <div id="scanLogList" class="panel-note" style="margin-top:8px">Belum ada scan.</div>
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-neutral" onclick="closeScanner()">Selesai</button>
+    </div>
+    <div class="security-note">
+      Nota: Kamera browser biasanya memerlukan laman dibuka melalui <b>HTTPS</b>. Jika fail dibuka terus sebagai HTML,
+      fungsi “Scan dari Gambar” atau USB QR scanner masih boleh digunakan.
+    </div>
+  </div>
+</dialog>
+
+
+<dialog id="pinDialog">
+  <div class="modal">
+    <h3>Tukar PIN Guru</h3>
+    <p>Masukkan PIN semasa dan PIN baharu 4–8 digit.</p>
+    <input id="oldPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN semasa">
+    <input id="newPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN baharu">
+    <input id="confirmPin" type="password" inputmode="numeric" maxlength="8" placeholder="Sahkan PIN baharu">
+    <div class="modal-actions">
+      <button class="btn-neutral" onclick="closePinDialog()">Batal</button>
+      <button class="btn-primary" onclick="changePin()">Simpan PIN</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="lockScreen" class="lock-screen">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h2>Lock Guru</h2>
+    <p>Masukkan PIN untuk membuka Rekod Kehadiran Kelas Pemulihan.</p>
+    <input id="unlockPin" class="pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••">
+    <button class="btn-primary" style="width:100%" onclick="unlockApp()">Buka Rekod</button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="security-note">
+      PIN lalai kali pertama: <b>1234</b><br>
+      Tukar PIN selepas masuk untuk keselamatan.
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+const KEY_STUDENTS = 'pemulihan_students_v1';
+const KEY_ATT = 'pemulihan_attendance_v1';
+const KEY_PIN = 'pemulihan_teacher_pin_v1';
+const KEY_SCANS = 'pemulihan_qr_scans_v1';
+const DEFAULT_PIN = '1234';
+let selectedPhotoStudentId = null;
+
+const DEFAULT_STUDENTS = [{"id": "stu_vincent_ling", "name": "Vincent Ling"}, {"id": "stu_eiden_ngu", "name": "Eiden Ngu"}, {"id": "stu_henson", "name": "Henson"}, {"id": "stu_anson", "name": "Anson"}, {"id": "stu_james", "name": "James"}, {"id": "stu_wong_yew_long", "name": "Wong Yew Long"}, {"id": "stu_aiden_wong", "name": "Aiden Wong"}, {"id": "stu_kevin_hii", "name": "Kevin Hii"}];
+let students = JSON.parse(localStorage.getItem(KEY_STUDENTS) || 'null');
+if(!Array.isArray(students) || students.length===0){
+  students = DEFAULT_STUDENTS.map(s=>({...s}));
+  localStorage.setItem(KEY_STUDENTS, JSON.stringify(students));
+}
+let attendance = JSON.parse(localStorage.getItem(KEY_ATT) || '{}');
+let scanTimes = JSON.parse(localStorage.getItem(KEY_SCANS) || '{}');
+let qrScanner = null;
+let qrCameraRunning = false;
+let currentQrStudentId = null;
+let lastQrValue = '';
+let lastQrAt = 0;
+
+const statusOptions = [
+  {key:'present', label:'Hadir'},
+  {key:'late', label:'Lewat'},
+  {key:'absent', label:'Tidak Hadir'},
+  {key:'mc', label:'MC'},
+  {key:'leave', label:'Cuti'}
+];
+
+const datePicker = document.getElementById('datePicker');
+
+function localDateString(){
+  const d = new Date();
+  const off = d.getTimezoneOffset();
+  return new Date(d.getTime() - off*60*1000).toISOString().slice(0,10);
+}
+datePicker.value = localDateString();
+
+function saveStudents(){
+  localStorage.setItem(KEY_STUDENTS, JSON.stringify(students));
+}
+function saveAttendance(){
+  localStorage.setItem(KEY_ATT, JSON.stringify(attendance));
+}
+function saveScanTimes(){
+  localStorage.setItem(KEY_SCANS, JSON.stringify(scanTimes));
+}
+function dayRecord(date){
+  if(!attendance[date]) attendance[date] = {};
+  return attendance[date];
+}
+function initials(name){
+  return name.trim().split(/\s+/).slice(0,2).map(x=>x[0]?.toUpperCase()||'').join('');
+}
+function formatDate(dateStr){
+  if(!dateStr) return '';
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y,m-1,d);
+  return dt.toLocaleDateString('ms-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),1800);
+}
+
+function render(){
+  const date = datePicker.value;
+  document.getElementById('dateLabel').textContent = formatDate(date);
+  const dayScans = scanTimes[date] || {};
+  const latest = Object.entries(dayScans).sort((a,b)=>String(b[1]).localeCompare(String(a[1])))[0];
+  document.getElementById('lastScanLabel').textContent = latest ? `Scan QR terakhir: ${latest[1]}` : '';
+  const wrap = document.getElementById('studentList');
+  const rec = dayRecord(date);
+
+  if(!students.length){
+    wrap.innerHTML = `
+      <div class="empty">
+        <div class="big">👩‍🏫</div>
+        <b>Belum ada murid.</b><br>
+        Tekan <b>Tambah Murid</b> untuk mula.
+      </div>`;
+  } else {
+    wrap.innerHTML = students.map((s,i)=>{
+      const active = rec[s.id] || '';
+      return `
+      <div class="student-row">
+        <div class="student-info">
+          <div class="photo-wrap">
+            ${s.photo
+              ? `<img class="student-photo" src="${s.photo}" alt="${escapeHtml(s.name)}">`
+              : `<div class="avatar">${initials(s.name)}</div>`}
+            <button class="photo-btn" title="Tambah / tukar gambar" onclick="choosePhoto('${s.id}')">📷</button>
+          </div>
+          <div>
+            <div class="student-name">${escapeHtml(s.name)}</div>
+            <div class="panel-note">Murid ${i+1}</div>
+          </div>
+        </div>
+        <div>
+          <div class="status-group">
+            ${statusOptions.map(o=>`
+              <button class="status ${o.key} ${active===o.key?'active':''}"
+                onclick="setStatus('${s.id}','${o.key}')">${o.label}</button>
+            `).join('')}
+          </div>
+          <div class="qr-actions" style="margin-top:6px">
+            <button class="qr-mini" onclick="showStudentQR('${s.id}')">▦ Kad QR</button>
+          </div>
+        </div>
+        <button class="delete" title="Padam murid" onclick="deleteStudent('${s.id}')">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  updateStats();
+  renderHistory();
+}
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+}
+function setStatus(id,status){
+  const rec = dayRecord(datePicker.value);
+  rec[id] = rec[id] === status ? '' : status;
+  saveAttendance();
+  render();
+}
+function updateStats(){
+  const rec = dayRecord(datePicker.value);
+  const values = Object.values(rec);
+  document.getElementById('totalCount').textContent = students.length;
+  document.getElementById('presentCount').textContent = values.filter(x=>x==='present').length;
+  document.getElementById('lateCount').textContent = values.filter(x=>x==='late').length;
+  document.getElementById('absentCount').textContent = values.filter(x=>x==='absent').length;
+  document.getElementById('otherCount').textContent = values.filter(x=>x==='mc'||x==='leave').length;
+}
+
+function openAdd(){
+  document.getElementById('addDialog').showModal();
+  setTimeout(()=>document.getElementById('studentName').focus(),50);
+}
+function closeAdd(){document.getElementById('addDialog').close()}
+function addStudent(){
+  const input=document.getElementById('studentName');
+  const name=input.value.trim();
+  if(!name) return;
+  students.push({id:'s'+Date.now()+Math.random().toString(16).slice(2), name});
+  saveStudents();
+  input.value='';
+  closeAdd();
+  render();
+  toast('Murid ditambah');
+}
+function deleteStudent(id){
+  const s=students.find(x=>x.id===id);
+  if(!s) return;
+  if(!confirm(`Padam ${s.name} daripada senarai murid?`)) return;
+  students=students.filter(x=>x.id!==id);
+  Object.keys(attendance).forEach(d=>{ if(attendance[d]) delete attendance[d][id]; });
+  Object.keys(scanTimes).forEach(d=>{ if(scanTimes[d]) delete scanTimes[d][id]; });
+  saveStudents(); saveAttendance(); saveScanTimes(); render();
+  toast('Murid dipadam');
+}
+function markAllPresent(){
+  if(!students.length) return toast('Tambah murid dahulu');
+  const rec=dayRecord(datePicker.value);
+  students.forEach(s=>rec[s.id]='present');
+  saveAttendance(); render(); toast('Semua murid ditanda hadir');
+}
+function clearDay(){
+  if(!confirm('Kosongkan semua rekod kehadiran untuk tarikh ini?')) return;
+  attendance[datePicker.value]={};
+  scanTimes[datePicker.value]={};
+  saveAttendance(); saveScanTimes(); render(); toast('Rekod tarikh dikosongkan');
+}
+
+function renderHistory(){
+  const tbody=document.getElementById('historyBody');
+  const dates=Object.keys(attendance)
+    .filter(d=>Object.values(attendance[d]||{}).some(Boolean))
+    .sort((a,b)=>b.localeCompare(a))
+    .slice(0,10);
+
+  if(!dates.length){
+    tbody.innerHTML='<tr><td colspan="5" style="color:#64748b;text-align:center;padding:24px">Belum ada rekod.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=dates.map(d=>{
+    const vals=Object.values(attendance[d]||{});
+    const p=vals.filter(x=>x==='present').length;
+    const l=vals.filter(x=>x==='late').length;
+    const a=vals.filter(x=>x==='absent').length;
+    const o=vals.filter(x=>x==='mc'||x==='leave').length;
+    return `<tr>
+      <td><b>${formatDate(d)}</b></td>
+      <td><span class="tag present">${p}</span></td>
+      <td><span class="tag late">${l}</span></td>
+      <td><span class="tag absent">${a}</span></td>
+      <td><span class="tag mc">${o}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function csvEscape(v){
+  const s=String(v??'');
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+function exportCSV(){
+  if(!students.length) return toast('Tiada murid untuk dieksport');
+  const statusLabel = Object.fromEntries(statusOptions.map(x=>[x.key,x.label]));
+  const dates=Object.keys(attendance).sort();
+  let rows=[['Tarikh','Nama Murid','Status']];
+  dates.forEach(d=>{
+    students.forEach(s=>{
+      const st=(attendance[d]||{})[s.id];
+      if(st) rows.push([d,s.name,statusLabel[st]||st]);
+    });
+  });
+  if(rows.length===1) return toast('Belum ada rekod kehadiran');
+  const csv='\uFEFF'+rows.map(r=>r.map(csvEscape).join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='rekod_kehadiran_pemulihan.csv';
+  document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+  toast('CSV dieksport');
+}
+
+
+
+function qrPayloadFor(id){
+  return `PEMULIHAN|${id}`;
+}
+function parseQrPayload(text){
+  const value=String(text||'').trim();
+  if(!value.startsWith('PEMULIHAN|')) return null;
+  return value.slice('PEMULIHAN|'.length);
+}
+function showStudentQR(id){
+  const s=students.find(x=>x.id===id);
+  if(!s) return;
+  if(typeof QRCode==='undefined') return toast('QR library belum tersedia. Pastikan internet aktif.');
+  currentQrStudentId=id;
+  document.getElementById('qrStudentName').textContent=s.name;
+  const box=document.getElementById('qrCodeBox');
+  box.innerHTML='';
+  new QRCode(box,{
+    text:qrPayloadFor(id),
+    width:210,
+    height:210,
+    correctLevel:QRCode.CorrectLevel.H
+  });
+  document.getElementById('qrDialog').showModal();
+}
+function printCurrentQR(){
+  const s=students.find(x=>x.id===currentQrStudentId);
+  const box=document.getElementById('qrCodeBox');
+  if(!s || !box) return;
+  const canvas=box.querySelector('canvas');
+  const img=box.querySelector('img');
+  const src=canvas ? canvas.toDataURL('image/png') : (img ? img.src : '');
+  if(!src) return toast('QR belum siap');
+  const w=window.open('','_blank','width=500,height=650');
+  w.document.write(`
+    <html><head><title>Kad QR - ${escapeHtml(s.name)}</title>
+    <style>
+      body{font-family:Arial,sans-serif;text-align:center;padding:35px}
+      .card{border:2px solid #222;border-radius:18px;padding:24px;max-width:320px;margin:auto}
+      img{width:220px;height:220px}
+      h2{margin:14px 0 4px;font-size:22px}
+      p{margin:0;color:#555}
+    </style></head>
+    <body><div class="card">
+      <img src="${src}" alt="QR">
+      <h2>${escapeHtml(s.name)}</h2>
+      <p>Kelas Pemulihan</p>
+    </div>
+    <script>window.onload=()=>{window.print();}<\/script></body></html>
+  `);
+  w.document.close();
+}
+function printAllQR(){
+  if(!students.length) return toast('Tiada murid');
+  if(typeof QRCode==='undefined') return toast('QR library belum tersedia. Pastikan internet aktif.');
+
+  const w=window.open('','_blank');
+  w.document.write(`
+    <html><head><title>Kad QR Kelas Pemulihan</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:20px}
+      .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+      .card{border:1.5px solid #222;border-radius:14px;padding:14px;text-align:center;break-inside:avoid}
+      .qr{display:flex;justify-content:center;min-height:180px}
+      .qr canvas,.qr img{width:180px!important;height:180px!important}
+      h3{margin:8px 0 2px;font-size:17px}
+      p{margin:0;font-size:12px;color:#555}
+      @media print{body{padding:0}.grid{gap:10px}}
+    </style></head><body><div class="grid" id="allQrGrid"></div></body></html>
+  `);
+  w.document.close();
+
+  const build=()=>{
+    const grid=w.document.getElementById('allQrGrid');
+    students.forEach(s=>{
+      const card=w.document.createElement('div');
+      card.className='card';
+      const q=w.document.createElement('div');
+      q.className='qr';
+      const name=w.document.createElement('h3');
+      name.textContent=s.name;
+      const p=w.document.createElement('p');
+      p.textContent='Kelas Pemulihan';
+      card.appendChild(q); card.appendChild(name); card.appendChild(p);
+      grid.appendChild(card);
+
+      // Generate in current document temporarily, then copy image
+      const temp=document.createElement('div');
+      temp.style.position='fixed'; temp.style.left='-9999px';
+      document.body.appendChild(temp);
+      new QRCode(temp,{text:qrPayloadFor(s.id),width:180,height:180,correctLevel:QRCode.CorrectLevel.H});
+      setTimeout(()=>{
+        const c=temp.querySelector('canvas');
+        const im=temp.querySelector('img');
+        const out=w.document.createElement('img');
+        out.src=c?c.toDataURL('image/png'):(im?im.src:'');
+        out.width=180;out.height=180;
+        q.innerHTML='';q.appendChild(out);
+        temp.remove();
+      },120);
+    });
+    setTimeout(()=>w.print(),900);
+  };
+  setTimeout(build,120);
+}
+
+
+function playSuccessSound(){
+  try{
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if(!AudioCtx) return;
+
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    const notes = [
+      {f:523.25, t:0.00, d:0.12},
+      {f:659.25, t:0.10, d:0.12},
+      {f:783.99, t:0.20, d:0.18}
+    ];
+
+    notes.forEach(n=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(n.f, now + n.t);
+
+      gain.gain.setValueAtTime(0.0001, now + n.t);
+      gain.gain.exponentialRampToValueAtTime(0.20, now + n.t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + n.t + n.d);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + n.t);
+      osc.stop(now + n.t + n.d + 0.02);
+    });
+
+    setTimeout(()=>ctx.close(), 700);
+  }catch(e){}
+}
+
+function recordQrAttendance(raw){
+  const now=Date.now();
+  if(raw===lastQrValue && now-lastQrAt<1800) return;
+  lastQrValue=raw; lastQrAt=now;
+
+  const id=parseQrPayload(raw);
+  if(!id){
+    updateScanStatus('QR tidak dikenali. Gunakan Kad QR yang dijana oleh sistem ini.', false);
+    return;
+  }
+  const s=students.find(x=>x.id===id);
+  if(!s){
+    updateScanStatus('QR sah tetapi murid ini tiada dalam senarai.', false);
+    return;
+  }
+
+  const date=datePicker.value;
+  const rec=dayRecord(date);
+  const already=rec[id]==='present';
+  rec[id]='present';
+
+  if(!scanTimes[date]) scanTimes[date]={};
+  const time=new Date().toLocaleTimeString('ms-MY',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  scanTimes[date][id]=time;
+  saveAttendance();
+  saveScanTimes();
+  render();
+  playSuccessSound();
+  updateScanStatus(`${already?'✓ Sudah direkod':'✓ Kehadiran direkod'}: ${s.name} • ${time}`, true);
+  renderScanLog();
+}
+function updateScanStatus(msg,ok=true){
+  const el=document.getElementById('scanStatus');
+  el.textContent=msg;
+  el.style.background=ok?'#dcfce7':'#fee2e2';
+  el.style.color=ok?'#166534':'#991b1b';
+}
+function renderScanLog(){
+  const date=datePicker.value;
+  const data=scanTimes[date]||{};
+  const entries=Object.entries(data)
+    .map(([id,time])=>({s:students.find(x=>x.id===id),time}))
+    .filter(x=>x.s)
+    .sort((a,b)=>String(b.time).localeCompare(String(a.time)))
+    .slice(0,8);
+  const wrap=document.getElementById('scanLogList');
+  if(!entries.length){
+    wrap.innerHTML='Belum ada scan.';
+    return;
+  }
+  wrap.innerHTML=entries.map(x=>`
+    <div class="scan-log-item">
+      <span><b>${escapeHtml(x.s.name)}</b></span>
+      <span>${x.time}</span>
+    </div>`).join('');
+}
+function openScanner(){
+  document.getElementById('scannerDialog').showModal();
+  updateScanStatus('Tekan “Mula Kamera” atau guna gambar QR.', true);
+  renderScanLog();
+}
+async function startQrCamera(){
+  if(typeof Html5Qrcode==='undefined'){
+    updateScanStatus('QR scanner library belum tersedia. Pastikan internet aktif.', false);
+    return;
+  }
+  if(qrCameraRunning) return;
+  try{
+    qrScanner = qrScanner || new Html5Qrcode('qrReader');
+    await qrScanner.start(
+      {facingMode:'environment'},
+      {fps:10, qrbox:{width:230,height:230}},
+      decodedText=>recordQrAttendance(decodedText),
+      ()=>{}
+    );
+    qrCameraRunning=true;
+    updateScanStatus('Kamera aktif. Halakan pada QR murid.', true);
+  }catch(err){
+    updateScanStatus('Kamera tidak dapat dibuka. Cuba “Scan dari Gambar” atau buka site melalui HTTPS.', false);
+  }
+}
+async function stopQrCamera(){
+  if(qrScanner && qrCameraRunning){
+    try{ await qrScanner.stop(); }catch(e){}
+    qrCameraRunning=false;
+    updateScanStatus('Kamera dihentikan.', true);
+  }
+}
+async function closeScanner(){
+  await stopQrCamera();
+  document.getElementById('scannerDialog').close();
+}
+document.getElementById('qrFileInput').addEventListener('change', async e=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+  if(typeof Html5Qrcode==='undefined'){
+    updateScanStatus('QR scanner library belum tersedia. Pastikan internet aktif.', false);
+    return;
+  }
+  try{
+    if(qrCameraRunning) await stopQrCamera();
+    qrScanner = qrScanner || new Html5Qrcode('qrReader');
+    const decoded=await qrScanner.scanFile(file,true);
+    recordQrAttendance(decoded);
+  }catch(err){
+    updateScanStatus('QR tidak dapat dibaca daripada gambar itu.', false);
+  }
+  e.target.value='';
+});
+function processManualQr(){
+  const input=document.getElementById('manualQrInput');
+  const value=input.value.trim();
+  if(!value) return;
+  recordQrAttendance(value);
+  input.value='';
+  input.focus();
+}
+document.getElementById('manualQrInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter') processManualQr();
+});
+
+function choosePhoto(id){
+  selectedPhotoStudentId = id;
+  const input = document.getElementById('photoInput');
+  input.value = '';
+  input.click();
+}
+
+document.getElementById('photoInput').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file || !selectedPhotoStudentId) return;
+  if(!file.type.startsWith('image/')) return toast('Sila pilih fail gambar');
+
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const max = 360;
+      let w = img.width, h = img.height;
+      if(w > h){
+        if(w > max){ h = Math.round(h * max / w); w = max; }
+      }else{
+        if(h > max){ w = Math.round(w * max / h); h = max; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      const data = canvas.toDataURL('image/jpeg',0.78);
+      const s = students.find(x=>x.id===selectedPhotoStudentId);
+      if(s){
+        s.photo = data;
+        try{
+          saveStudents();
+          render();
+          toast('Gambar murid disimpan');
+        }catch(err){
+          toast('Storan penuh. Cuba gambar lebih kecil.');
+        }
+      }
+      selectedPhotoStudentId = null;
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function currentPin(){
+  return localStorage.getItem(KEY_PIN) || DEFAULT_PIN;
+}
+function isValidPin(pin){
+  return /^\d{4,8}$/.test(pin);
+}
+function lockApp(){
+  sessionStorage.removeItem('pemulihan_unlocked');
+  document.getElementById('unlockPin').value='';
+  document.getElementById('lockError').textContent='';
+  document.getElementById('lockScreen').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('unlockPin').focus(),50);
+}
+function unlockApp(){
+  const pin=document.getElementById('unlockPin').value.trim();
+  if(pin===currentPin()){
+    sessionStorage.setItem('pemulihan_unlocked','1');
+    document.getElementById('lockScreen').classList.add('hidden');
+    document.getElementById('lockError').textContent='';
+    document.getElementById('unlockPin').value='';
+  }else{
+    document.getElementById('lockError').textContent='PIN tidak betul.';
+    document.getElementById('unlockPin').select();
+  }
+}
+function openPinDialog(){
+  document.getElementById('oldPin').value='';
+  document.getElementById('newPin').value='';
+  document.getElementById('confirmPin').value='';
+  document.getElementById('pinDialog').showModal();
+  setTimeout(()=>document.getElementById('oldPin').focus(),50);
+}
+function closePinDialog(){document.getElementById('pinDialog').close()}
+function changePin(){
+  const oldPin=document.getElementById('oldPin').value.trim();
+  const newPin=document.getElementById('newPin').value.trim();
+  const confirmPin=document.getElementById('confirmPin').value.trim();
+  if(oldPin!==currentPin()) return toast('PIN semasa tidak betul');
+  if(!isValidPin(newPin)) return toast('PIN baharu mesti 4–8 digit');
+  if(newPin!==confirmPin) return toast('Pengesahan PIN tidak sama');
+  localStorage.setItem(KEY_PIN,newPin);
+  closePinDialog();
+  toast('PIN Guru berjaya ditukar');
+}
+document.getElementById('unlockPin').addEventListener('keydown', e=>{
+  if(e.key==='Enter') unlockApp();
+});
+function initLock(){
+  if(sessionStorage.getItem('pemulihan_unlocked')==='1'){
+    document.getElementById('lockScreen').classList.add('hidden');
+  }else{
+    document.getElementById('lockScreen').classList.remove('hidden');
+  }
+}
+
+
+
+function exportFullBackup(){
+  try{
+    const payload={
+      app:"Rekod Kehadiran Kelas Pemulihan",
+      backupVersion:1,
+      exportedAt:new Date().toISOString(),
+      students:students,
+      attendance:attendance,
+      scanTimes:scanTimes,
+      teacherPin:currentPin()
+    };
+
+    const data=JSON.stringify(payload,null,2);
+    const blob=new Blob([data],{type:'application/json;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const date=localDateString();
+    a.href=url;
+    a.download=`pemulihan_full_backup_${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('Full backup berjaya dibuat');
+  }catch(err){
+    alert('Backup gagal: '+(err.message||err));
+  }
+}
+
+function validateBackup(data){
+  if(!data || typeof data!=='object') throw new Error('Fail backup tidak sah.');
+  if(data.app!=='Rekod Kehadiran Kelas Pemulihan') throw new Error('Fail ini bukan backup daripada sistem ini.');
+  if(!Array.isArray(data.students)) throw new Error('Senarai murid tidak sah.');
+  if(!data.attendance || typeof data.attendance!=='object') throw new Error('Data kehadiran tidak sah.');
+  if(!data.scanTimes || typeof data.scanTimes!=='object') data.scanTimes={};
+  if(typeof data.teacherPin!=='string' || !/^\d{4,8}$/.test(data.teacherPin)) data.teacherPin=DEFAULT_PIN;
+
+  data.students.forEach((s,i)=>{
+    if(!s || typeof s!=='object' || !s.id || !s.name){
+      throw new Error(`Data murid pada rekod ${i+1} tidak sah.`);
+    }
+  });
+  return data;
+}
+
+function restoreFullBackup(data){
+  const backup=validateBackup(data);
+
+  students=backup.students;
+  attendance=backup.attendance;
+  scanTimes=backup.scanTimes;
+
+  localStorage.setItem(KEY_STUDENTS,JSON.stringify(students));
+  localStorage.setItem(KEY_ATT,JSON.stringify(attendance));
+  localStorage.setItem(KEY_SCANS,JSON.stringify(scanTimes));
+  localStorage.setItem(KEY_PIN,backup.teacherPin);
+
+  render();
+  toast('Backup berjaya dipulihkan');
+}
+
+document.getElementById('backupImportInput').addEventListener('change',e=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const parsed=JSON.parse(ev.target.result);
+      const checked=validateBackup(parsed);
+
+      const backupDate=checked.exportedAt
+        ? new Date(checked.exportedAt).toLocaleString('ms-MY')
+        : 'Tidak diketahui';
+
+      const ok=confirm(
+        `RESTORE FULL BACKUP\n\n`+
+        `Backup dibuat: ${backupDate}\n`+
+        `Jumlah murid: ${checked.students.length}\n\n`+
+        `Data pada device ini akan digantikan dengan data daripada backup.\n`+
+        `Teruskan?`
+      );
+      if(!ok) return;
+
+      restoreFullBackup(checked);
+
+      alert(
+        `Restore selesai.\n\n`+
+        `Murid: ${students.length}\n`+
+        `Rekod kehadiran, gambar murid, QR ID, masa scan dan PIN Guru telah dipulihkan.\n\n`+
+        `Anda mungkin perlu unlock semula menggunakan PIN daripada backup.`
+      );
+    }catch(err){
+      alert('Restore gagal: '+(err.message||err));
+    }finally{
+      e.target.value='';
+    }
+  };
+  reader.onerror=()=>{
+    alert('Fail backup tidak dapat dibaca.');
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+});
+
+function parseCSVLine(line){
+  const out=[];
+  let cur='', inQuotes=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){
+      if(inQuotes && line[i+1]==='"'){
+        cur+='"';
+        i++;
+      }else{
+        inQuotes=!inQuotes;
+      }
+    }else if(ch===',' && !inQuotes){
+      out.push(cur);
+      cur='';
+    }else{
+      cur+=ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function normalizeStatusLabel(value){
+  const v=String(value||'').trim().toLowerCase();
+  const map={
+    'hadir':'present',
+    'present':'present',
+    'lewat':'late',
+    'late':'late',
+    'tidak hadir':'absent',
+    'absent':'absent',
+    'mc':'mc',
+    'cuti':'leave',
+    'leave':'leave'
+  };
+  return map[v] || null;
+}
+
+function normalizeName(name){
+  return String(name||'').trim().replace(/\s+/g,' ').toLowerCase();
+}
+
+function createImportedStudent(name){
+  const clean=String(name||'').trim().replace(/\s+/g,' ');
+  const id='imp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+  const s={id,name:clean};
+  students.push(s);
+  return s;
+}
+
+function importAttendanceCSV(text){
+  text=String(text||'').replace(/^\uFEFF/,'').trim();
+  if(!text) throw new Error('Fail CSV kosong.');
+
+  const lines=text.split(/\r?\n/).filter(x=>x.trim()!=='');
+  if(lines.length<2) throw new Error('CSV tidak mempunyai rekod.');
+
+  const header=parseCSVLine(lines[0]).map(x=>x.trim().toLowerCase());
+  const dateIdx=header.indexOf('tarikh');
+  const nameIdx=header.indexOf('nama murid');
+  const statusIdx=header.indexOf('status');
+
+  if(dateIdx<0 || nameIdx<0 || statusIdx<0){
+    throw new Error('Format CSV tidak dikenali. Gunakan fail yang dieksport dari sistem ini.');
+  }
+
+  let imported=0, skipped=0, newStudents=0;
+  const nameMap=new Map(students.map(s=>[normalizeName(s.name),s]));
+
+  for(let i=1;i<lines.length;i++){
+    const cols=parseCSVLine(lines[i]);
+    const date=(cols[dateIdx]||'').trim();
+    const name=(cols[nameIdx]||'').trim();
+    const status=normalizeStatusLabel(cols[statusIdx]);
+
+    if(!date || !name || !status || !/^\d{4}-\d{2}-\d{2}$/.test(date)){
+      skipped++;
+      continue;
+    }
+
+    let student=nameMap.get(normalizeName(name));
+    if(!student){
+      student=createImportedStudent(name);
+      nameMap.set(normalizeName(name),student);
+      newStudents++;
+    }
+
+    if(!attendance[date]) attendance[date]={};
+    attendance[date][student.id]=status;
+    imported++;
+  }
+
+  saveStudents();
+  saveAttendance();
+  render();
+
+  return {imported, skipped, newStudents};
+}
+
+document.getElementById('csvImportInput').addEventListener('change', e=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const result=importAttendanceCSV(ev.target.result);
+      let msg=`Import berjaya: ${result.imported} rekod`;
+      if(result.newStudents) msg+=`, ${result.newStudents} murid baharu`;
+      if(result.skipped) msg+=`, ${result.skipped} baris diabaikan`;
+      toast(msg);
+      alert(
+        `Import CSV selesai.\n\n`+
+        `Rekod dipulihkan: ${result.imported}\n`+
+        `Murid baharu ditambah: ${result.newStudents}\n`+
+        `Baris diabaikan: ${result.skipped}\n\n`+
+        `Nota: gambar murid, PIN Guru dan masa scan QR tidak disimpan dalam CSV.`
+      );
+    }catch(err){
+      alert('Import gagal: '+(err.message||err));
+    }finally{
+      e.target.value='';
+    }
+  };
+  reader.onerror=()=>{
+    alert('Fail CSV tidak dapat dibaca.');
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+});
+
+datePicker.addEventListener('change',render);
+document.getElementById('studentName').addEventListener('keydown',e=>{
+  if(e.key==='Enter') addStudent();
+});
+
+render();
+initLock();
+</script>
+</body>
+</html>
