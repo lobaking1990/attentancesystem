@@ -282,7 +282,7 @@
       <div class="logo">✓</div>
       <div>
         <h1>Rekod Kehadiran Kelas Pemulihan</h1>
-        <div class="subtitle">Seronok • Ceria • Jom datang sekolah setiap hari 🌈</div>
+        <div class="subtitle">Seronok • Ceria • Backup penuh boleh dipindahkan antara device 🌈</div>
       </div>
     </div>
     <div class="top-actions">
@@ -310,6 +310,11 @@
     <button class="btn-primary" onclick="openScanner()">▣ Scan QR</button>
     <button class="btn-soft" onclick="printAllQR()">▦ Cetak Semua QR</button>
     <button class="btn-neutral" onclick="exportCSV()">⬇ Eksport CSV</button>
+    <button class="btn-neutral" onclick="document.getElementById('csvImportInput').click()">⬆ Import CSV</button>
+    <input id="csvImportInput" type="file" accept=".csv,text/csv" hidden>
+    <button class="btn-soft" onclick="exportFullBackup()">💾 Full Backup</button>
+    <button class="btn-soft" onclick="document.getElementById('backupImportInput').click()">♻ Restore Backup</button>
+    <input id="backupImportInput" type="file" accept=".json,application/json" hidden>
     <button class="btn-neutral" onclick="window.print()">🖨 Cetak</button>
   </div>
 
@@ -1071,6 +1076,245 @@ function initLock(){
     document.getElementById('lockScreen').classList.remove('hidden');
   }
 }
+
+
+
+function exportFullBackup(){
+  try{
+    const payload={
+      app:"Rekod Kehadiran Kelas Pemulihan",
+      backupVersion:1,
+      exportedAt:new Date().toISOString(),
+      students:students,
+      attendance:attendance,
+      scanTimes:scanTimes,
+      teacherPin:currentPin()
+    };
+
+    const data=JSON.stringify(payload,null,2);
+    const blob=new Blob([data],{type:'application/json;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const date=localDateString();
+    a.href=url;
+    a.download=`pemulihan_full_backup_${date}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    toast('Full backup berjaya dibuat');
+  }catch(err){
+    alert('Backup gagal: '+(err.message||err));
+  }
+}
+
+function validateBackup(data){
+  if(!data || typeof data!=='object') throw new Error('Fail backup tidak sah.');
+  if(data.app!=='Rekod Kehadiran Kelas Pemulihan') throw new Error('Fail ini bukan backup daripada sistem ini.');
+  if(!Array.isArray(data.students)) throw new Error('Senarai murid tidak sah.');
+  if(!data.attendance || typeof data.attendance!=='object') throw new Error('Data kehadiran tidak sah.');
+  if(!data.scanTimes || typeof data.scanTimes!=='object') data.scanTimes={};
+  if(typeof data.teacherPin!=='string' || !/^\d{4,8}$/.test(data.teacherPin)) data.teacherPin=DEFAULT_PIN;
+
+  data.students.forEach((s,i)=>{
+    if(!s || typeof s!=='object' || !s.id || !s.name){
+      throw new Error(`Data murid pada rekod ${i+1} tidak sah.`);
+    }
+  });
+  return data;
+}
+
+function restoreFullBackup(data){
+  const backup=validateBackup(data);
+
+  students=backup.students;
+  attendance=backup.attendance;
+  scanTimes=backup.scanTimes;
+
+  localStorage.setItem(KEY_STUDENTS,JSON.stringify(students));
+  localStorage.setItem(KEY_ATT,JSON.stringify(attendance));
+  localStorage.setItem(KEY_SCANS,JSON.stringify(scanTimes));
+  localStorage.setItem(KEY_PIN,backup.teacherPin);
+
+  render();
+  toast('Backup berjaya dipulihkan');
+}
+
+document.getElementById('backupImportInput').addEventListener('change',e=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const parsed=JSON.parse(ev.target.result);
+      const checked=validateBackup(parsed);
+
+      const backupDate=checked.exportedAt
+        ? new Date(checked.exportedAt).toLocaleString('ms-MY')
+        : 'Tidak diketahui';
+
+      const ok=confirm(
+        `RESTORE FULL BACKUP\n\n`+
+        `Backup dibuat: ${backupDate}\n`+
+        `Jumlah murid: ${checked.students.length}\n\n`+
+        `Data pada device ini akan digantikan dengan data daripada backup.\n`+
+        `Teruskan?`
+      );
+      if(!ok) return;
+
+      restoreFullBackup(checked);
+
+      alert(
+        `Restore selesai.\n\n`+
+        `Murid: ${students.length}\n`+
+        `Rekod kehadiran, gambar murid, QR ID, masa scan dan PIN Guru telah dipulihkan.\n\n`+
+        `Anda mungkin perlu unlock semula menggunakan PIN daripada backup.`
+      );
+    }catch(err){
+      alert('Restore gagal: '+(err.message||err));
+    }finally{
+      e.target.value='';
+    }
+  };
+  reader.onerror=()=>{
+    alert('Fail backup tidak dapat dibaca.');
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+});
+
+function parseCSVLine(line){
+  const out=[];
+  let cur='', inQuotes=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){
+      if(inQuotes && line[i+1]==='"'){
+        cur+='"';
+        i++;
+      }else{
+        inQuotes=!inQuotes;
+      }
+    }else if(ch===',' && !inQuotes){
+      out.push(cur);
+      cur='';
+    }else{
+      cur+=ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+function normalizeStatusLabel(value){
+  const v=String(value||'').trim().toLowerCase();
+  const map={
+    'hadir':'present',
+    'present':'present',
+    'lewat':'late',
+    'late':'late',
+    'tidak hadir':'absent',
+    'absent':'absent',
+    'mc':'mc',
+    'cuti':'leave',
+    'leave':'leave'
+  };
+  return map[v] || null;
+}
+
+function normalizeName(name){
+  return String(name||'').trim().replace(/\s+/g,' ').toLowerCase();
+}
+
+function createImportedStudent(name){
+  const clean=String(name||'').trim().replace(/\s+/g,' ');
+  const id='imp_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8);
+  const s={id,name:clean};
+  students.push(s);
+  return s;
+}
+
+function importAttendanceCSV(text){
+  text=String(text||'').replace(/^\uFEFF/,'').trim();
+  if(!text) throw new Error('Fail CSV kosong.');
+
+  const lines=text.split(/\r?\n/).filter(x=>x.trim()!=='');
+  if(lines.length<2) throw new Error('CSV tidak mempunyai rekod.');
+
+  const header=parseCSVLine(lines[0]).map(x=>x.trim().toLowerCase());
+  const dateIdx=header.indexOf('tarikh');
+  const nameIdx=header.indexOf('nama murid');
+  const statusIdx=header.indexOf('status');
+
+  if(dateIdx<0 || nameIdx<0 || statusIdx<0){
+    throw new Error('Format CSV tidak dikenali. Gunakan fail yang dieksport dari sistem ini.');
+  }
+
+  let imported=0, skipped=0, newStudents=0;
+  const nameMap=new Map(students.map(s=>[normalizeName(s.name),s]));
+
+  for(let i=1;i<lines.length;i++){
+    const cols=parseCSVLine(lines[i]);
+    const date=(cols[dateIdx]||'').trim();
+    const name=(cols[nameIdx]||'').trim();
+    const status=normalizeStatusLabel(cols[statusIdx]);
+
+    if(!date || !name || !status || !/^\d{4}-\d{2}-\d{2}$/.test(date)){
+      skipped++;
+      continue;
+    }
+
+    let student=nameMap.get(normalizeName(name));
+    if(!student){
+      student=createImportedStudent(name);
+      nameMap.set(normalizeName(name),student);
+      newStudents++;
+    }
+
+    if(!attendance[date]) attendance[date]={};
+    attendance[date][student.id]=status;
+    imported++;
+  }
+
+  saveStudents();
+  saveAttendance();
+  render();
+
+  return {imported, skipped, newStudents};
+}
+
+document.getElementById('csvImportInput').addEventListener('change', e=>{
+  const file=e.target.files && e.target.files[0];
+  if(!file) return;
+
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const result=importAttendanceCSV(ev.target.result);
+      let msg=`Import berjaya: ${result.imported} rekod`;
+      if(result.newStudents) msg+=`, ${result.newStudents} murid baharu`;
+      if(result.skipped) msg+=`, ${result.skipped} baris diabaikan`;
+      toast(msg);
+      alert(
+        `Import CSV selesai.\n\n`+
+        `Rekod dipulihkan: ${result.imported}\n`+
+        `Murid baharu ditambah: ${result.newStudents}\n`+
+        `Baris diabaikan: ${result.skipped}\n\n`+
+        `Nota: gambar murid, PIN Guru dan masa scan QR tidak disimpan dalam CSV.`
+      );
+    }catch(err){
+      alert('Import gagal: '+(err.message||err));
+    }finally{
+      e.target.value='';
+    }
+  };
+  reader.onerror=()=>{
+    alert('Fail CSV tidak dapat dibaca.');
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
+});
 
 datePicker.addEventListener('change',render);
 document.getElementById('studentName').addEventListener('keydown',e=>{
