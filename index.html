@@ -266,6 +266,24 @@
     header{align-items:flex-start}
   }
 
+
+  .cloud-badge{
+    display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border-radius:999px;
+    font-size:12px;font-weight:900;border:1px solid #e2e8f0;background:#fff;color:#475569;
+  }
+  .cloud-badge.online{background:#dcfce7;color:#166534;border-color:#86efac}
+  .cloud-badge.syncing{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+  .cloud-badge.offline{background:#f1f5f9;color:#475569;border-color:#cbd5e1}
+  .cloud-form{display:grid;gap:10px;margin-top:14px}
+  .cloud-form label{font-size:12px;font-weight:800;color:#64748b}
+  .cloud-form input{width:100%;margin:4px 0 0!important}
+  .cloud-help{
+    background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:12px;
+    font-size:12px;color:#64748b;line-height:1.5;margin-top:12px
+  }
+  .cloud-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .cloud-account{font-size:12px;color:#64748b;margin-top:10px}
+
   @media print{
     body{background:white}
     .hero,.toolbar,.bottom-actions,.delete,.history,.top-actions{display:none!important}
@@ -282,10 +300,12 @@
       <div class="logo">✓</div>
       <div>
         <h1>Rekod Kehadiran Kelas Pemulihan</h1>
-        <div class="subtitle">Seronok • Ceria • Backup penuh boleh dipindahkan antara device 🌈</div>
+        <div class="subtitle">Seronok • Ceria • Supabase Cloud Sync antara phone, laptop & tablet 🌈</div>
       </div>
     </div>
     <div class="top-actions">
+      <button id="cloudButton" class="btn-soft" onclick="openCloudDialog()">☁️ Cloud Sync</button>
+      <span id="cloudBadge" class="cloud-badge offline">● Local sahaja</span>
       <button class="btn-soft" onclick="openPinDialog()">🔑 Tukar PIN</button>
       <button class="btn-neutral" onclick="lockApp()">🔒 Lock Guru</button>
     </div>
@@ -397,6 +417,47 @@
 
 <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
 
+<dialog id="cloudDialog">
+  <div class="modal">
+    <h3>☁️ Supabase Cloud Sync</h3>
+    <p>Sambungkan semua device kepada akaun Supabase yang sama untuk rekod masa nyata.</p>
+
+    <div class="cloud-form">
+      <label>Project URL
+        <input id="supabaseUrlInput" type="text" placeholder="https://xxxx.supabase.co">
+      </label>
+      <label>Publishable Key
+        <input id="supabaseKeyInput" type="password" placeholder="sb_publishable_... / anon key">
+      </label>
+      <label>Email Guru
+        <input id="supabaseEmailInput" type="text" inputmode="email" placeholder="guru@example.com">
+      </label>
+      <label>Password Supabase
+        <input id="supabasePasswordInput" type="password" placeholder="Password akaun">
+      </label>
+    </div>
+
+    <div id="cloudAccountText" class="cloud-account">Belum disambungkan.</div>
+
+    <div class="cloud-actions">
+      <button class="btn-neutral" onclick="saveCloudConfig()">Simpan Tetapan</button>
+      <button class="btn-soft" onclick="cloudSignUp()">Daftar Akaun</button>
+      <button class="btn-primary" onclick="cloudLogin()">Log Masuk</button>
+      <button class="btn-danger" onclick="cloudLogout()">Log Keluar</button>
+    </div>
+
+    <div class="cloud-help">
+      <b>Gunakan Publishable/anon key sahaja.</b> Jangan masukkan <b>service_role</b> key.
+      Data murid hanya boleh dibaca oleh akaun guru yang log masuk apabila SQL/RLS setup telah dibuat.
+    </div>
+
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-neutral" onclick="document.getElementById('cloudDialog').close()">Tutup</button>
+    </div>
+  </div>
+</dialog>
+
+
 <dialog id="qrDialog">
   <div class="modal">
     <h3>Kad QR Murid</h3>
@@ -481,12 +542,24 @@
 
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const KEY_STUDENTS = 'pemulihan_students_v1';
 const KEY_ATT = 'pemulihan_attendance_v1';
 const KEY_PIN = 'pemulihan_teacher_pin_v1';
 const KEY_SCANS = 'pemulihan_qr_scans_v1';
 const DEFAULT_PIN = '1234';
+
+const KEY_SUPABASE_URL = 'pemulihan_supabase_url_v1';
+const KEY_SUPABASE_KEY = 'pemulihan_supabase_key_v1';
+const KEY_SUPABASE_EMAIL = 'pemulihan_supabase_email_v1';
+
+let supabaseClient = null;
+let cloudUser = null;
+let cloudChannel = null;
+let cloudRefreshTimer = null;
+let cloudLoading = false;
+
 let selectedPhotoStudentId = null;
 
 const DEFAULT_STUDENTS = [{"id": "stu_vincent_ling", "name": "Vincent Ling"}, {"id": "stu_eiden_ngu", "name": "Eiden Ngu"}, {"id": "stu_henson", "name": "Henson"}, {"id": "stu_anson", "name": "Anson"}, {"id": "stu_james", "name": "James"}, {"id": "stu_wong_yew_long", "name": "Wong Yew Long"}, {"id": "stu_aiden_wong", "name": "Aiden Wong"}, {"id": "stu_kevin_hii", "name": "Kevin Hii"}];
@@ -512,6 +585,367 @@ const statusOptions = [
 ];
 
 const datePicker = document.getElementById('datePicker');
+
+
+function setCloudStatus(mode,text){
+  const badge=document.getElementById('cloudBadge');
+  if(!badge) return;
+  badge.className='cloud-badge '+mode;
+  badge.textContent='● '+text;
+  const acct=document.getElementById('cloudAccountText');
+  if(acct){
+    acct.textContent=cloudUser ? `Disambungkan sebagai ${cloudUser.email||'guru'}` : text;
+  }
+}
+
+function getCloudConfig(){
+  return {
+    url:localStorage.getItem(KEY_SUPABASE_URL)||'',
+    key:localStorage.getItem(KEY_SUPABASE_KEY)||'',
+    email:localStorage.getItem(KEY_SUPABASE_EMAIL)||''
+  };
+}
+
+function fillCloudForm(){
+  const c=getCloudConfig();
+  document.getElementById('supabaseUrlInput').value=c.url;
+  document.getElementById('supabaseKeyInput').value=c.key;
+  document.getElementById('supabaseEmailInput').value=c.email;
+  document.getElementById('supabasePasswordInput').value='';
+  const acct=document.getElementById('cloudAccountText');
+  if(acct) acct.textContent=cloudUser ? `Disambungkan sebagai ${cloudUser.email||'guru'}` : 'Belum log masuk.';
+}
+
+function openCloudDialog(){
+  fillCloudForm();
+  document.getElementById('cloudDialog').showModal();
+}
+
+function saveCloudConfig(){
+  const url=document.getElementById('supabaseUrlInput').value.trim().replace(/\/+$/,'');
+  const key=document.getElementById('supabaseKeyInput').value.trim();
+  const email=document.getElementById('supabaseEmailInput').value.trim();
+
+  if(!url || !key) return toast('Project URL dan Publishable Key diperlukan');
+  if(/service_role/i.test(key)){
+    alert('Jangan gunakan service_role key dalam laman web. Gunakan Publishable / anon key.');
+    return;
+  }
+
+  localStorage.setItem(KEY_SUPABASE_URL,url);
+  localStorage.setItem(KEY_SUPABASE_KEY,key);
+  localStorage.setItem(KEY_SUPABASE_EMAIL,email);
+  initSupabaseClient(true);
+  toast('Tetapan Supabase disimpan');
+}
+
+function initSupabaseClient(force=false){
+  const c=getCloudConfig();
+  if(!c.url || !c.key || !window.supabase){
+    setCloudStatus('offline','Local sahaja');
+    return false;
+  }
+  if(supabaseClient && !force) return true;
+
+  if(cloudChannel && supabaseClient){
+    try{supabaseClient.removeChannel(cloudChannel);}catch(e){}
+  }
+  supabaseClient=window.supabase.createClient(c.url,c.key,{
+    auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  });
+  return true;
+}
+
+async function initCloud(){
+  if(!initSupabaseClient()) return;
+  try{
+    const {data:{session}}=await supabaseClient.auth.getSession();
+    if(session?.user){
+      cloudUser=session.user;
+      setCloudStatus('syncing','Menyambung...');
+      await cloudInitialSync();
+      subscribeCloudRealtime();
+    }else{
+      setCloudStatus('offline','Belum login');
+    }
+
+    supabaseClient.auth.onAuthStateChange(async (event,session)=>{
+      cloudUser=session?.user||null;
+      if(cloudUser){
+        setCloudStatus('syncing','Menyambung...');
+        await cloudInitialSync();
+        subscribeCloudRealtime();
+      }else{
+        if(cloudChannel){
+          try{supabaseClient.removeChannel(cloudChannel);}catch(e){}
+          cloudChannel=null;
+        }
+        setCloudStatus('offline','Belum login');
+      }
+    });
+  }catch(err){
+    console.error(err);
+    setCloudStatus('offline','Cloud gagal');
+  }
+}
+
+async function cloudSignUp(){
+  saveCloudConfig();
+  if(!supabaseClient) return;
+  const email=document.getElementById('supabaseEmailInput').value.trim();
+  const password=document.getElementById('supabasePasswordInput').value;
+  if(!email || password.length<6) return alert('Masukkan email dan password sekurang-kurangnya 6 aksara.');
+  setCloudStatus('syncing','Mendaftar...');
+  const {data,error}=await supabaseClient.auth.signUp({email,password});
+  if(error){
+    setCloudStatus('offline','Daftar gagal');
+    return alert('Daftar gagal: '+error.message);
+  }
+  if(data.session){
+    cloudUser=data.user;
+    await cloudInitialSync();
+    subscribeCloudRealtime();
+    toast('Akaun Supabase berjaya dibuat');
+  }else{
+    setCloudStatus('offline','Sahkan email');
+    alert('Akaun dibuat. Semak email dan sahkan akaun dahulu, kemudian Log Masuk.');
+  }
+}
+
+async function cloudLogin(){
+  saveCloudConfig();
+  if(!supabaseClient) return;
+  const email=document.getElementById('supabaseEmailInput').value.trim();
+  const password=document.getElementById('supabasePasswordInput').value;
+  if(!email || !password) return alert('Masukkan email dan password.');
+  setCloudStatus('syncing','Log masuk...');
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){
+    setCloudStatus('offline','Login gagal');
+    return alert('Login gagal: '+error.message);
+  }
+  cloudUser=data.user;
+  await cloudInitialSync();
+  subscribeCloudRealtime();
+  document.getElementById('cloudDialog').close();
+  toast('Cloud Sync aktif');
+}
+
+async function cloudLogout(){
+  if(!supabaseClient) return;
+  await supabaseClient.auth.signOut();
+  cloudUser=null;
+  setCloudStatus('offline','Belum login');
+  toast('Log keluar Supabase');
+}
+
+async function cloudFetchAll(){
+  if(!supabaseClient || !cloudUser) return null;
+  const uid=cloudUser.id;
+
+  const [sRes,aRes,pRes]=await Promise.all([
+    supabaseClient.from('pemulihan_students').select('student_id,name,photo').eq('user_id',uid).order('name'),
+    supabaseClient.from('pemulihan_attendance').select('date,student_id,status,scan_time').eq('user_id',uid),
+    supabaseClient.from('pemulihan_settings').select('teacher_pin').eq('user_id',uid).maybeSingle()
+  ]);
+
+  const err=sRes.error||aRes.error||pRes.error;
+  if(err) throw err;
+  return {students:sRes.data||[],attendance:aRes.data||[],settings:pRes.data||null};
+}
+
+function applyCloudRows(rows){
+  if(!rows) return;
+  students=(rows.students||[]).map(r=>({
+    id:r.student_id,
+    name:r.name,
+    ...(r.photo?{photo:r.photo}:{})
+  }));
+
+  attendance={};
+  scanTimes={};
+  (rows.attendance||[]).forEach(r=>{
+    if(!attendance[r.date]) attendance[r.date]={};
+    attendance[r.date][r.student_id]=r.status;
+    if(r.scan_time){
+      if(!scanTimes[r.date]) scanTimes[r.date]={};
+      scanTimes[r.date][r.student_id]=r.scan_time;
+    }
+  });
+
+  if(rows.settings?.teacher_pin){
+    localStorage.setItem(KEY_PIN,rows.settings.teacher_pin);
+  }
+
+  saveStudents();
+  saveAttendance();
+  saveScanTimes();
+  render();
+}
+
+function flattenAttendance(){
+  const rows=[];
+  Object.entries(attendance).forEach(([date,rec])=>{
+    Object.entries(rec||{}).forEach(([studentId,status])=>{
+      if(!status) return;
+      rows.push({
+        user_id:cloudUser.id,
+        date,
+        student_id:studentId,
+        status,
+        scan_time:(scanTimes[date]||{})[studentId]||null,
+        updated_at:new Date().toISOString()
+      });
+    });
+  });
+  return rows;
+}
+
+async function cloudUploadCurrentAll(replace=false){
+  if(!supabaseClient || !cloudUser) return;
+  const uid=cloudUser.id;
+  setCloudStatus('syncing','Menyimpan...');
+
+  if(replace){
+    const d1=await supabaseClient.from('pemulihan_attendance').delete().eq('user_id',uid);
+    if(d1.error) throw d1.error;
+    const d2=await supabaseClient.from('pemulihan_students').delete().eq('user_id',uid);
+    if(d2.error) throw d2.error;
+  }
+
+  if(students.length){
+    const rows=students.map(s=>({
+      user_id:uid,student_id:s.id,name:s.name,photo:s.photo||null,updated_at:new Date().toISOString()
+    }));
+    const {error}=await supabaseClient.from('pemulihan_students').upsert(rows,{onConflict:'user_id,student_id'});
+    if(error) throw error;
+  }
+
+  const attRows=flattenAttendance();
+  if(attRows.length){
+    const {error}=await supabaseClient.from('pemulihan_attendance').upsert(attRows,{onConflict:'user_id,date,student_id'});
+    if(error) throw error;
+  }
+
+  const {error:pErr}=await supabaseClient.from('pemulihan_settings').upsert({
+    user_id:uid,teacher_pin:currentPin(),updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+  if(pErr) throw pErr;
+
+  setCloudStatus('online','Cloud aktif');
+}
+
+async function cloudInitialSync(){
+  if(!supabaseClient || !cloudUser) return;
+  if(cloudLoading) return;
+  cloudLoading=true;
+  try{
+    const rows=await cloudFetchAll();
+    const cloudEmpty=(rows.students.length===0 && rows.attendance.length===0);
+    if(cloudEmpty){
+      await cloudUploadCurrentAll(false);
+    }else{
+      applyCloudRows(rows);
+      setCloudStatus('online','Cloud aktif');
+    }
+  }catch(err){
+    console.error(err);
+    setCloudStatus('offline','Semak SQL/RLS');
+    alert('Supabase belum siap atau akses ditolak. Jalankan fail SQL setup dalam Supabase SQL Editor dahulu.\n\n'+err.message);
+  }finally{
+    cloudLoading=false;
+  }
+}
+
+function subscribeCloudRealtime(){
+  if(!supabaseClient || !cloudUser) return;
+  if(cloudChannel){
+    try{supabaseClient.removeChannel(cloudChannel);}catch(e){}
+  }
+  cloudChannel=supabaseClient
+    .channel('pemulihan-live-'+cloudUser.id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'pemulihan_students',filter:`user_id=eq.${cloudUser.id}`},scheduleCloudRefresh)
+    .on('postgres_changes',{event:'*',schema:'public',table:'pemulihan_attendance',filter:`user_id=eq.${cloudUser.id}`},scheduleCloudRefresh)
+    .on('postgres_changes',{event:'*',schema:'public',table:'pemulihan_settings',filter:`user_id=eq.${cloudUser.id}`},scheduleCloudRefresh)
+    .subscribe(status=>{
+      if(status==='SUBSCRIBED') setCloudStatus('online','Live sync');
+    });
+}
+
+function scheduleCloudRefresh(){
+  clearTimeout(cloudRefreshTimer);
+  cloudRefreshTimer=setTimeout(async()=>{
+    if(cloudLoading || !cloudUser) return;
+    try{
+      const rows=await cloudFetchAll();
+      applyCloudRows(rows);
+      setCloudStatus('online','Live sync');
+    }catch(err){
+      console.error(err);
+      setCloudStatus('offline','Sync terganggu');
+    }
+  },180);
+}
+
+async function cloudUpsertStudent(s){
+  if(!supabaseClient || !cloudUser || !s) return;
+  const {error}=await supabaseClient.from('pemulihan_students').upsert({
+    user_id:cloudUser.id,student_id:s.id,name:s.name,photo:s.photo||null,updated_at:new Date().toISOString()
+  },{onConflict:'user_id,student_id'});
+  if(error){console.error(error);setCloudStatus('offline','Sync gagal');}
+}
+
+async function cloudDeleteStudentData(id){
+  if(!supabaseClient || !cloudUser) return;
+  const uid=cloudUser.id;
+  const a=await supabaseClient.from('pemulihan_attendance').delete().eq('user_id',uid).eq('student_id',id);
+  const s=await supabaseClient.from('pemulihan_students').delete().eq('user_id',uid).eq('student_id',id);
+  if(a.error||s.error){console.error(a.error||s.error);setCloudStatus('offline','Sync gagal');}
+}
+
+async function cloudUpsertAttendance(date,id,status,scanTime=null){
+  if(!supabaseClient || !cloudUser) return;
+  if(!status){
+    const {error}=await supabaseClient.from('pemulihan_attendance').delete()
+      .eq('user_id',cloudUser.id).eq('date',date).eq('student_id',id);
+    if(error){console.error(error);setCloudStatus('offline','Sync gagal');}
+    return;
+  }
+  const {error}=await supabaseClient.from('pemulihan_attendance').upsert({
+    user_id:cloudUser.id,date,student_id:id,status,scan_time:scanTime||null,updated_at:new Date().toISOString()
+  },{onConflict:'user_id,date,student_id'});
+  if(error){console.error(error);setCloudStatus('offline','Sync gagal');}
+}
+
+async function cloudUpsertManyAttendance(date,ids,status){
+  if(!supabaseClient || !cloudUser || !ids.length) return;
+  const rows=ids.map(id=>({
+    user_id:cloudUser.id,date,student_id:id,status,scan_time:(scanTimes[date]||{})[id]||null,
+    updated_at:new Date().toISOString()
+  }));
+  const {error}=await supabaseClient.from('pemulihan_attendance').upsert(rows,{onConflict:'user_id,date,student_id'});
+  if(error){console.error(error);setCloudStatus('offline','Sync gagal');}
+}
+
+async function cloudDeleteDay(date){
+  if(!supabaseClient || !cloudUser) return;
+  const {error}=await supabaseClient.from('pemulihan_attendance').delete().eq('user_id',cloudUser.id).eq('date',date);
+  if(error){console.error(error);setCloudStatus('offline','Sync gagal');}
+}
+
+async function cloudSavePin(pin){
+  if(!supabaseClient || !cloudUser) return;
+  const {error}=await supabaseClient.from('pemulihan_settings').upsert({
+    user_id:cloudUser.id,teacher_pin:pin,updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+  if(error){console.error(error);setCloudStatus('offline','Sync gagal');}
+}
+
+window.addEventListener('online',async()=>{
+  if(supabaseClient && cloudUser){
+    try{await cloudInitialSync();}catch(e){}
+  }
+});
 
 function localDateString(){
   const d = new Date();
@@ -604,10 +1038,12 @@ function escapeHtml(str){
   return str.replace(/[&<>"']/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
 }
 function setStatus(id,status){
-  const rec = dayRecord(datePicker.value);
+  const date=datePicker.value;
+  const rec = dayRecord(date);
   rec[id] = rec[id] === status ? '' : status;
   saveAttendance();
   render();
+  cloudUpsertAttendance(date,id,rec[id]||null,(scanTimes[date]||{})[id]||null);
 }
 function updateStats(){
   const rec = dayRecord(datePicker.value);
@@ -628,8 +1064,10 @@ function addStudent(){
   const input=document.getElementById('studentName');
   const name=input.value.trim();
   if(!name) return;
-  students.push({id:'s'+Date.now()+Math.random().toString(16).slice(2), name});
+  const newStudent={id:'s'+Date.now()+Math.random().toString(16).slice(2), name};
+  students.push(newStudent);
   saveStudents();
+  cloudUpsertStudent(newStudent);
   input.value='';
   closeAdd();
   render();
@@ -643,19 +1081,24 @@ function deleteStudent(id){
   Object.keys(attendance).forEach(d=>{ if(attendance[d]) delete attendance[d][id]; });
   Object.keys(scanTimes).forEach(d=>{ if(scanTimes[d]) delete scanTimes[d][id]; });
   saveStudents(); saveAttendance(); saveScanTimes(); render();
+  cloudDeleteStudentData(id);
   toast('Murid dipadam');
 }
 function markAllPresent(){
   if(!students.length) return toast('Tambah murid dahulu');
   const rec=dayRecord(datePicker.value);
   students.forEach(s=>rec[s.id]='present');
-  saveAttendance(); render(); toast('Semua murid ditanda hadir');
+  saveAttendance(); render();
+  cloudUpsertManyAttendance(datePicker.value,students.map(s=>s.id),'present');
+  toast('Semua murid ditanda hadir');
 }
 function clearDay(){
   if(!confirm('Kosongkan semua rekod kehadiran untuk tarikh ini?')) return;
   attendance[datePicker.value]={};
   scanTimes[datePicker.value]={};
-  saveAttendance(); saveScanTimes(); render(); toast('Rekod tarikh dikosongkan');
+  saveAttendance(); saveScanTimes(); render();
+  cloudDeleteDay(datePicker.value);
+  toast('Rekod tarikh dikosongkan');
 }
 
 function renderHistory(){
@@ -882,6 +1325,7 @@ function recordQrAttendance(raw){
   saveAttendance();
   saveScanTimes();
   render();
+  cloudUpsertAttendance(date,id,'present',time);
   playSuccessSound();
   updateScanStatus(`${already?'✓ Sudah direkod':'✓ Kehadiran direkod'}: ${s.name} • ${time}`, true);
   renderScanLog();
@@ -1010,6 +1454,7 @@ document.getElementById('photoInput').addEventListener('change', e=>{
         try{
           saveStudents();
           render();
+          cloudUpsertStudent(s);
           toast('Gambar murid disimpan');
         }catch(err){
           toast('Storan penuh. Cuba gambar lebih kecil.');
@@ -1063,6 +1508,7 @@ function changePin(){
   if(!isValidPin(newPin)) return toast('PIN baharu mesti 4–8 digit');
   if(newPin!==confirmPin) return toast('Pengesahan PIN tidak sama');
   localStorage.setItem(KEY_PIN,newPin);
+  cloudSavePin(newPin);
   closePinDialog();
   toast('PIN Guru berjaya ditukar');
 }
@@ -1137,6 +1583,12 @@ function restoreFullBackup(data){
   localStorage.setItem(KEY_PIN,backup.teacherPin);
 
   render();
+  if(supabaseClient && cloudUser){
+    cloudUploadCurrentAll(true).catch(err=>{
+      console.error(err);
+      alert('Restore pada device berjaya, tetapi cloud restore gagal: '+err.message);
+    });
+  }
   toast('Backup berjaya dipulihkan');
 }
 
@@ -1280,6 +1732,9 @@ function importAttendanceCSV(text){
   saveStudents();
   saveAttendance();
   render();
+  if(supabaseClient && cloudUser){
+    cloudUploadCurrentAll(false).catch(err=>console.error(err));
+  }
 
   return {imported, skipped, newStudents};
 }
@@ -1323,6 +1778,7 @@ document.getElementById('studentName').addEventListener('keydown',e=>{
 
 render();
 initLock();
+initCloud();
 </script>
 </body>
 </html>
